@@ -1,0 +1,85 @@
+ let dom = document.querySelector('#root');
+ ReactDOM.render(<app></app>, dom);
+  
+ // App Component.
+ function App() {
+   const url = 'http://localhost:8080/';
+   const [msg, setMsg] = React.useState('Welcome to Message Board.');
+   const [name, setName] = React.useState("");
+   const [content, setContent] = React.useState("");
+   const [data, setData] = React.useState({id:0, name:'no name',mail:'no mail'});
+   const [alldata, setAlldata] = React.useState([]);
+    
+   // データ一覧の更新
+   React.useEffect(()=> {
+     fetch(url)
+     .then(res=> res.json())
+     .then(res=> {
+       setAlldata(res);
+     });
+   },[msg]);
+    
+   // nameフィールドの入力
+   const doChange1 = (e)=> {
+     setName(e.target.value);
+   }
+   // contentテキストエリアの入力
+   const doChange2 = (e)=> {
+     setContent(e.target.value);
+   }
+    
+   // フォームの内容を投稿する
+   const doPost = ()=> {
+     fetch(url, {
+       method: 'POST',
+       mode: 'cors',
+       headers: {
+         "Content-Type": "application/json"
+       },
+       body:JSON.stringify({
+           name:name, 
+           message:content
+         })
+       })
+       .then(res=>res.text())
+       .then(res=> {
+         setMsg('message posted! (id=' + res + ')');
+         setName("");
+         setContent("");
+       });
+   }
+  
+   return (
+     <div>
+     <h1 className="bg-secondary text-light p-2">Message Board</h1>
+     <div className="container">
+       <p className="h5">{msg}</p>
+       <div><input type="text" className="form-control mb-2"
+         required placeholder="name"
+         onChange={doChange1} value={name}/></div>
+       <div><textarea className="form-control mb-2"
+         required placeholder="content"
+         onChange={doChange2} value={content}></textarea></div>
+       <button className="btn btn-secondary" onClick={doPost}>Post</button>
+       <hr/>
+       <table className="table">
+         <thead><tr><th>ID</th><th>Message</th><th>Name</th></tr></thead>
+         <tbody>
+         {alldata.map((value,ky)=>(
+           <tr key={ky}>
+             <td>{value.id}</td>
+             <td><div>{value.message}</div>
+               <div className="text-end">
+                 ({new Date(value.posted).toLocaleString()})
+               </div></td>
+             <td>{value.name}</td>
+           </tr>
+         ))}
+         </tbody>
+       </table>
+       <p className="text-center border-top border-secondary h6 my-4">
+         copyright Tuyano 2021.</p>
+     </div>
+   </div>
+ );
+
